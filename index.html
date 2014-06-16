@@ -137,10 +137,10 @@
                         FB.api({
                             method: 'fql.query',
                             //取得粉絲團Po文
-                            query: "select post_id,source_id,attachment,permalink,message,type,share_info,like_info from stream where source_id = '122355981186846' and message <> '' LIMIT 50"
+                            query: "select post_id,source_id,attachment,permalink,message,type,share_info,like_info from stream where source_id = '" + fanid + "' and message <> '' LIMIT 300"
                         }, function (res) {
                             loading(false);
-                            //alert(JSON.stringify(res));
+                            alert(JSON.stringify(res));
                             var html = "";
                             html += "<table cellpadding=\"3\" border=\"0\" style=\"border-bottom:0px solid #000000\" width=\"100%\" class=\"itemtb\">";
                             for (var key in res) {
