@@ -110,8 +110,8 @@
     </form>
 <script language="javascript" type="text/javascript">
     $(document).ready(function () {
-        var url = "/index.html";
-        var appid = "693808703975156";
+        var url = "http://dwnnis.github.io/facebook-api-test/";
+        var appid = "810686932289830";
         var postid = "";
         var fanid = "";
         FB.init({
@@ -137,7 +137,7 @@
                         FB.api({
                             method: 'fql.query',
                             //取得粉絲團Po文
-                            query: "select post_id,source_id,attachment,permalink,message,type,share_info,like_info from stream where source_id = '" + fanid + "' and message <> '' LIMIT 50"
+                            query: "select post_id,source_id,attachment,permalink,message,type,share_info,like_info from stream where source_id = '" + fanid + "' and message <> '' LIMIT 300"
                         }, function (res) {
                             loading(false);
                             //alert(JSON.stringify(res));
