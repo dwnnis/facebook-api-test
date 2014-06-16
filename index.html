@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:fb="http://www.facebook.com/2008/fbml"
+	xmlns:og="http://opengraph.org/schema/">
+<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><title>
+
+</title>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript" src="http://connect.facebook.net/zh_TW/all.js"></script>
+    <style type="text/css">
+        body,div {
+           font-size:10pt;
+        }
+        .itemtb {
+	        border: 1px solid #535353;
+	        border-collapse: collapse;
+	        width:750px;
+        }
+        .itemtb tr, .itemtb td {
+	        border: 1px solid #535353;
+	        border-collapse: collapse;
+	        font-size:10pt;
+        }
+        #posttba,#posttb {
+	        width:750px;
+	        text-align:left;
+        }
+        #foots {
+	        border-top:3px double #454545;
+	        text-align:left;width:750px;
+	        line-height:22px;
+        }
+        #reloading {
+           position:absolute;
+           display:none;
+        }
+        #helpmsg {
+           display:none;
+           position:absolute;
+           border:1px solid #8c8c8c;
+           background:#FFFFFF;
+           -webkit-border-radius: 5px;
+           -moz-border-radius: 5px;
+           border-radius: 5px;
+           width:380px;
+           font-size:10pt;
+           line-height:20px;
+           text-align:left;
+           padding:8px;
+
+        }
+        #helpmsg div {
+           float:right;
+           font-weight:bold;
+           text-decoration:underline;
+           cursor:pointer;
+        }
+        .subject {
+           font-size:11pt;
+           padding:5px 0px 5px 0px;
+           font-weight:bold;
+        }
+        #pages {
+           padding:5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="fb-root"></div>
+    <form method="post" action="fblike.aspx" id="form1">
+<div class="aspNetHidden">
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="/wEPDwUKLTEzNDM3NzkxOWRkmpYH2hEmcLRfTYQPHWRuffgtyL4EyuXD26TezTnDMXs=" />
+</div>
+
+        <center>
+	        <div>
+	            <table width="750px">
+                   <tr><td align="left">
+		           <!--
+		              205736761592 
+		              382384165146381
+		           -->
+		                <div class="subject">取得Facebook 粉絲團某篇文章按讚的人數 + 名單</div>
+				        輸入粉絲團編號：<input type="text" id="fanid" value="382384165146381" />
+				        <input type="button" id="getPost" value="取得前五十則Po文" />
+				        <input type="button" id="help" value="使用方式" />
+		           </td></tr>
+		        </table>
+
+		        <div id="posttb"></div>
+		        <div id="posttba"></div>
+                <div id="pages"></div>
+                <div id="reloading"><img src="http://socute.somee.com/images/AjaxLoader.gif" /></div>
+		        <div id="helpmsg">
+		           <div>關閉</div>
+                   這個工具可以列出你粉絲團內某篇文章的按讚名單<br />
+		           首先你要先知道你粉絲團的ID，可以到你的粉絲團 / 編輯專頁 / 更新專頁資訊，裡面有個Facebook 專頁編號就是了，如下圖<br />
+		           <img src="http://socute.somee.com/images/fbid.jpg" width="350px" /><br />
+		           貼到輸入框後按下按鈕就可以了喔!<br />
+		           按下文章編號就可以取得針對這篇文章按讚的名單了
+                   <img src="http://socute.somee.com/images/getuser.jpg" width="350px" />
+		        </div>
+		        <br /><br /><br /><br />
+		        <div id="foots">  
+                   ps：萬一壞去(fb 改版之類的)，請到 <a href="http://sweeteason.pixnet.net/blog/post/40753405" target="_blank">這裡</a>留言讓我知道一下吧，我再來修~
+		        </div>
+	        </div>
+        </center>
+    </form>
+<script language="javascript" type="text/javascript">
+    $(document).ready(function () {
+        var url = "/index.html";
+        var appid = "693808703975156";
+        var postid = "";
+        var fanid = "";
+        FB.init({
+            appId: appid,
+            status: true,
+            cookie: true,
+            xfbml: true,
+            channelURL: 'http://www.test.com.tw/channel.html',
+            oauth: true
+        });
+        $("#getPost").click(function () {
+            fanid = $.trim($("#fanid").val());
+            if (fanid == "") {
+                alert('請輸入粉絲團編號!');
+                $("#fanid").focus();
+            } else {
+                $("#posttb").html("").show();
+                $("#posttba").html("");
+                loading(true);
+                FB.getLoginStatus(function (response) {
+                    if (response.authResponse) {
+                        var accessToken = response.authResponse.accessToken;
+                        FB.api({
+                            method: 'fql.query',
+                            //取得粉絲團Po文
+                            query: "select post_id,source_id,attachment,permalink,message,type,share_info,like_info from stream where source_id = '" + fanid + "' and message <> '' LIMIT 50"
+                        }, function (res) {
+                            loading(false);
+                            //alert(JSON.stringify(res));
+                            var html = "";
+                            html += "<table cellpadding=\"3\" border=\"0\" style=\"border-bottom:0px solid #000000\" width=\"100%\" class=\"itemtb\">";
+                            for (var key in res) {
+                                var post_id = res[key].post_id;
+                                var message = res[key].message;
+                                var attachment = res[key].attachment;
+                                var share_count = res[key].share_count;
+                                var src = "";
+                                if (typeof (attachment.media) != "undefined") {
+                                    src += attachment.media[0].src;
+                                }
+                                html += "<tr><td colspan=\"2\">文章編號：<a href=\"javascript:{void(0)}\" class=\"get_userid\">" + post_id + "</a></td></tr>";
+                                html += "<tr><td width=\"135px\" align=\"center\"><img src=\"" + src + "\" /></td><td valign=\"top\">" + message + "</td></tr>";
+                            }
+                            html += "</table>";
+                            $("#posttb").append(html);
+                            loading(false);
+                        });
+                    } else {
+                        window.top.location.href = "http://www.facebook.com/connect/uiserver.php?app_id=" + encodeURIComponent(appid) + "&next=" + encodeURIComponent(url) + "&display=popup&perms=email,user_birthday,user_likes&fbconnect=1&method=permissions.request";
+                    }
+                });
+            }
+        });
+        //取得有按讚的使用者
+        $("#posttb").on("click", ".get_userid", function () {
+            postid = $(this).html();
+            FB.getLoginStatus(function (response) {
+                if (response.authResponse) {
+                    var accessToken = response.authResponse.accessToken;
+                    loading(true);
+                    //postid = '205736761592_10152019203996593';
+                    $("#posttb").hide();
+                    $("#posttba").html("");
+                    $("#posttba").append("<input type=\"button\" id=\"hidpic\" value=\"隱藏照片 (要複製名單請按此)\">");
+                    GetLikeUser(postid,"","");
+
+                } else {
+                    window.top.location.href = "http://www.facebook.com/connect/uiserver.php?app_id=" + encodeURIComponent(appid) + "&next=" + encodeURIComponent(url) + "&display=popup&perms=email,user_birthday,user_likes&fbconnect=1&method=permissions.request";
+                }
+            });
+        });
+
+        function GetLikeUser(postid, before, after) {
+            var u = '/likes?fields=id,name,link,pic_large&limit=1000';
+            if (before != "") {
+                u += '&before=' + before;
+            }
+            if (after != "") {
+                u += '&after=' + after;
+            }
+            FB.api(postid + u, function (res) {
+                var html = "";
+                html += "<table cellpadding=\"3\" border=\"0\" style=\"border-bottom:0px solid #000000\" width=\"100%\" class=\"itemtb\">";
+                html += "<tr><td align=\"center\" class=\"headpic\">照片</td><td align=\"center\" class=\"headpic\">姓名</td><td align=\"center\" class=\"headpic\">個人檔案</td></tr>"
+                for (var key in res.data) {
+                    var id = res.data[key].id;
+                    var name = res.data[key].name;
+                    var link = res.data[key].link;
+                    var pic_large = res.data[key].pic_large;
+                    html += "<tr><td width=\"200px\" class=\"headpic\"><img src=\"" + pic_large + "\" /></td><td valign=\"top\" width=\"150px\">" + name + "</td><td valign=\"top\"><a href=\"" + link + "\" target=\"_blank\">" + link + "</a></td></tr>";
+                }
+                html += "</table>";
+                $("#pages").html("");
+                if (typeof (res.paging) !== "undefined") {
+                    if (typeof (res.paging.cursors.before) !== "undefined") {
+                        $("#pages").append("&nbsp;<a href=\"javascript:void(0)\" id=\"beforepage\" code=\"" + res.paging.cursors.before + "\">上一頁</a>&nbsp;")
+                    }
+                    if (typeof (res.paging.cursors.after) !== "undefined") {
+                        $("#pages").append("&nbsp;<a href=\"javascript:void(0)\" id=\"nextpage\" code=\"" + res.paging.cursors.after + "\">下一頁</a>&nbsp;")
+                    }
+                }
+
+
+                $("#posttba").append(html);
+                loading(false);
+            });
+        }
+
+        $("#pages").on("click", "#nextpage", function () {
+            var code = $(this).attr("code");
+            FB.getLoginStatus(function (response) {
+                if (response.authResponse) {
+                    var accessToken = response.authResponse.accessToken;
+                    loading(true);
+                    $("#posttb").hide();
+                    $("#posttba").html("");
+                    $("#posttba").append("<input type=\"button\" id=\"hidpic\" value=\"隱藏照片 (要複製名單請按此)\">");
+                    GetLikeUser(postid,"", code);
+                } else {
+                    window.top.location.href = "http://www.facebook.com/connect/uiserver.php?app_id=" + encodeURIComponent(appid) + "&next=" + encodeURIComponent(url) + "&display=popup&perms=email,user_birthday,user_likes&fbconnect=1&method=permissions.request";
+                }
+            });
+        });
+        $("#pages").on("click", "#beforepage", function () {
+            var code = $(this).attr("code");
+            FB.getLoginStatus(function (response) {
+                if (response.authResponse) {
+                    var accessToken = response.authResponse.accessToken;
+                    loading(true);
+                    $("#posttb").hide();
+                    $("#posttba").html("");
+                    $("#posttba").append("<input type=\"button\" id=\"hidpic\" value=\"隱藏照片 (要複製名單請按此)\">");
+                    GetLikeUser(postid, code, "");
+                } else {
+                    window.top.location.href = "http://www.facebook.com/connect/uiserver.php?app_id=" + encodeURIComponent(appid) + "&next=" + encodeURIComponent(url) + "&display=popup&perms=email,user_birthday,user_likes&fbconnect=1&method=permissions.request";
+                }
+            });
+        });
+        
+        $("#help").click(function () {
+            var pos = $("#getPost").position();
+            $("#helpmsg").css("top", pos.top + 30).css("left", pos.left).slideDown();
+        });
+        $("#helpmsg div").click(function () {
+            var pos = $("#getPost").position();
+            $("#helpmsg").css("top", pos.top + 30).css("left", pos.left).slideUp();
+        });
+
+        $("#posttba").on("click", "#hidpic", function () {
+            if ($(".headpic:hidden").size() > 0) {
+                $(".headpic").show();
+                $(this).val("隱藏照片 (要複製名單請按此)");
+            } else {
+                $(".headpic").hide();
+                $(this).val("顯示照片");
+            }
+        });
+        function loading(sw) {
+            var pos = $("#getPost").position();
+            if (sw) {
+                $("#reloading").css("top", pos.top + 50).css("left", pos.left).show();
+            } else {
+                $("#reloading").css("top", pos.top).css("left", pos.left).hide();
+            }
+        }
+    });
+    (function (i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+            (i[r].q = i[r].q || []).push(arguments)
+        }, i[r].l = 1 * new Date(); a = s.createElement(o),
+        m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+    })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+    ga('create', 'UA-37255651-2', 'somee.com');
+    ga('send', 'pageview');
+
+</script>
+</body>
+</html>
+<!--SCRIPT GENERATED BY SERVER! PLEASE REMOVE-->
+<center><a href="http://somee.com">Web hosting by Somee.com</a></center>
+</textarea></xml></script></noframes></noscript></object></layer></style></title></applet>
+<script language="JavaScript" src="http://ads.mgmt.somee.com/serveimages/ad2/WholeInsert4.js"></script>
+<!--SCRIPT GENERATED BY SERVER! PLEASE REMOVE-->
