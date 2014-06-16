@@ -149,6 +149,7 @@
                                 var attachment = res[key].attachment;
                                 var share_count = res[key].share_count;
                                 var src = "";
+								alert("Error: " + error.code + " " + error.message);
                                 if (typeof (attachment.media) != "undefined") {
                                     src += attachment.media[0].src;	
                                 }
